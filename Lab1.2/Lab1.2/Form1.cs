@@ -51,10 +51,6 @@ namespace Lab1._2
         {
             string strInBase64 = "";
             List<byte> textInBytes = System.Text.Encoding.UTF8.GetBytes(richTextBox1.Text).ToList();
-            while (textInBytes.Count % 3 != 0)
-            {
-                textInBytes.Add(0);
-            }
             List<string> bitsRes;
             FillBitsArr(out bitsRes, textInBytes);
             ConvertBitsToLetters(out strInBase64, bitsRes);
@@ -63,6 +59,10 @@ namespace Lab1._2
 
         private void FillBitsArr(out List<string> bitsRes, List<byte> textInBytes)
         {
+            while(textInBytes.Count % 3 != 0)
+            {
+                textInBytes.Add(0);
+            }
             bitsRes = new List<string>();
             for (int i = 0; i < textInBytes.Count; i += 3)
             {
@@ -109,6 +109,68 @@ namespace Lab1._2
                 }
                 strInBase64 += lettersInBase64[res];
             }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string normalText = "";
+            if (richTextBox2.Text.Length == 0)
+            {
+                MessageBox.Show("The text is missing");
+            }
+            else
+            {
+                List<string> bits6 = new List<string>();
+                for (int i = 0; i < richTextBox2.Text.Length; i++)
+                {
+                    bits6.Add(lettersInBase64.IndexOf(richTextBox2.Text[i]).ToString());
+                }
+                List<char> bits = new List<char>();
+                List<char> sextets = new List<char>();
+                for (int i = 0; i < bits6.Count; i++)
+                {
+                    sextets.Clear();
+                    sextets.AddRange(Convert.ToString(Int32.Parse(bits6[i]), 2).ToCharArray());
+                    if (sextets.Count < 6)
+                    {
+                        for (int j = 0; j < 6 - sextets.Count; j++)
+                        {
+                            bits.Add('0');
+                        }
+                    }
+                    bits.AddRange(sextets);
+                }
+                byte[] bytes = ToByteArray(bits);
+                normalText = Encoding.UTF8.GetString(bytes);
+                richTextBox1.Text = normalText;
+            }
+        }
+
+        private byte[] ToByteArray(List<char> bits)
+        {
+            int numBytes = bits.Count / 8;
+            if (bits.Count % 8 != 0)
+            {
+                numBytes++;
+            }
+            byte[] bytes = new byte[numBytes];
+            int byteIndex = 0, bitIndex = 0, pow = 7;
+            for(int i = 0; i < bits.Count; i++)
+            {
+                if (bits[i] == '1')
+                {
+                    bytes[byteIndex] += (byte)Math.Pow(2, pow);
+                }
+                pow--;
+                bitIndex++;
+                if (bitIndex == 8)
+                {
+                    bitIndex = 0;
+                    byteIndex++;
+                    pow = 7;
+                }
+            }
+            return bytes;
         }
     }
 }
